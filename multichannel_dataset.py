@@ -13,6 +13,44 @@ class MultiChannelDataset(Dataset):
         :param input (list): a list of lists of input channel file paths
         :param output (list): a list of lists of outputs file paths
         :param transform (Compose): a list of transformations currently none supported TODO
+
+
+        # Examples
+        input_filenames = [
+                    ['input/channel_0_img1.png',
+                    'input/channel_0_img2.png',
+                    'input/channel_0.img3png'],
+
+                    ['input/channel_1_img1.png',
+                    'input/channel_1_img2.png',
+                    'input/channel_1.img3png'],
+
+                    ['input/channel_2_img1.png',
+                    'input/channel_2_img2.png',
+                    'input/channel_2.img3png'],
+
+                    ['input/channel_3_img1.png',
+                    'input/channel_3_img2.png',
+                    'input/channel_3.img3png']
+                    ]
+        output_filenames = [
+            ['output/channel_0_img1.png',
+            'output/channel_0_img2.png',
+            'output/channel_0.img3png'],
+
+            ['output/channel_1_img1.png',
+            'output/channel_1_img2.png',
+            'output/channel_1.img3png']
+            ]
+
+        my_ds = MultiChannelDataset(input_filenames, output_filenames)
+
+        # to get a single item:
+        my_ds[0]
+
+        # to use in a DataLoader
+        DataLoader(my_ds,batch_size=5,...)
+
         '''
 
         # Checks to make sure that the input channels and output channels have
