@@ -4,7 +4,7 @@ from PIL import Image
 
 
 class MultiChannelDataset(Dataset):
-    def __init__(self, input, output, transform=None):
+    def __init__(self, input, output, preload_data=False, transform=None):
         '''
         A pytorch Dataset that supports multichannel inputs and outputs. returns as a dictionary of numpy arrays (if no
          transform converts it to something else) of size (C,H,W) where C is the number of channels, H is the height
@@ -12,6 +12,8 @@ class MultiChannelDataset(Dataset):
         Args:
         :param input (list): a list of lists of input channel file paths
         :param output (list): a list of lists of outputs file paths
+        :param preload_data(bool): if True, the data is loaded into memory prior to indexing.
+                                   Otherwise images are loaded into memory when they are indexed.
         :param transform (Compose): a list of transformations currently none supported TODO
 
 
@@ -66,17 +68,30 @@ class MultiChannelDataset(Dataset):
         self.input = np.array(input).transpose()  # transpose for easier indexing in __getitem__
         self.output = np.array(output).transpose()  # transpose for easier indexing in __getitem__
 
+        if preload_data:
+            self.input_preload = []
+            self.output_preload = []
+            for idx in range(self.input.shape[0]):
+                print(f'Loading {idx+1}/{self.input.shape[0]}')
+                self.input_preload.append(self.load_multichannel_image(self.input[idx]))
+                self.output_preload.append(self.load_multichannel_image(self.output[idx]))
+
         self.num_input_channels = len(input)
         self.num_output_channels = len(output)
         self.transform = transform
 
     def __len__(self):
-        assert len(self.input[0]) == len(self.output[0])
-        return len(self.input[0])
+        assert self.input.shape[0] == self.output.shape[0]
+        return self.input.shape[0]
 
     def __getitem__(self, idx):
-        item = {'input': self.load_multichannel_image(self.input[idx]),
-                'output': self.load_multichannel_image(self.output[idx])}
+        try:
+            item = {
+                'input': self.input_preload[idx],
+                'output': self.output_preload[idx]}
+        except AttributeError:
+            item = {'input': self.load_multichannel_image(self.input[idx]),
+                    'output': self.load_multichannel_image(self.output[idx])}
         if self.transform:
             item = self.transform(item)
         return item

@@ -93,7 +93,41 @@ def test_load_multichannel_images():
     print(ds.input[0])
     assert (np.array_equal(item_input, test_input_array))
     assert (np.array_equal(item_output, test_output_array))
+    assert (len(ds) == 10)
 
+def test_preload_multichannel_image():
+    input_test_dir = './test_images/input'
+    output_test_dir = './test_images/output'
+    inputs = create_test_multichannel_images(input_test_dir, n_channels=5, n_images=10)
+    outputs = create_test_multichannel_images(output_test_dir, n_channels=2, n_images=10)
+
+    ds = MultiChannelDataset(inputs, outputs,preload_data=True)
+    item = ds[0]
+
+    img0_channel_0_input = np.array(Image.open(os.path.join(input_test_dir, 'channel_000', 'channel_00_img000.png')))
+    img0_channel_1_input = np.array(Image.open(os.path.join(input_test_dir, 'channel_001', 'channel_01_img000.png')))
+    img0_channel_2_input = np.array(Image.open(os.path.join(input_test_dir, 'channel_002', 'channel_02_img000.png')))
+    img0_channel_3_input = np.array(Image.open(os.path.join(input_test_dir, 'channel_003', 'channel_03_img000.png')))
+    img0_channel_4_input = np.array(Image.open(os.path.join(input_test_dir, 'channel_004', 'channel_04_img000.png')))
+
+    img0_channel_0_output = np.array(Image.open(os.path.join(output_test_dir, 'channel_000', 'channel_00_img000.png')))
+    img0_channel_1_output = np.array(Image.open(os.path.join(output_test_dir, 'channel_001', 'channel_01_img000.png')))
+
+    test_input_array = np.stack([img0_channel_0_input, img0_channel_1_input,
+                                 img0_channel_2_input, img0_channel_3_input,
+                                 img0_channel_4_input], axis=0)
+
+    test_output_array = np.stack([img0_channel_0_output,
+                                  img0_channel_1_output], axis=0)
+
+    item_input = item['input']
+    item_output = item['output']
+    assert (item_input.shape == (5, 128, 128))
+    assert (item_output.shape == (2, 128, 128))
+    print(ds.input[0])
+    assert (np.array_equal(item_input, test_input_array))
+    assert (np.array_equal(item_output, test_output_array))
+    assert (len(ds) == 10)
 
 def create_test_multichannel_images(dir, n_channels, n_images, size=(128, 128)):
     channels = []
